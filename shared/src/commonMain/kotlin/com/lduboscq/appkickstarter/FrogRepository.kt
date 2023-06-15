@@ -1,80 +1,73 @@
 package com.lduboscq.appkickstarter
 
 import io.realm.kotlin.Realm
-import io.realm.kotlin.RealmConfiguration
-import io.realm.kotlin.internal.platform.runBlocking
-import io.realm.kotlin.log.LogLevel
-import io.realm.kotlin.mongodb.App
-import io.realm.kotlin.mongodb.AppConfiguration
-import io.realm.kotlin.mongodb.Credentials
-import io.realm.kotlin.mongodb.sync.SyncConfiguration
-import io.realm.kotlin.schema.RealmStorageType
-import io.realm.kotlin.types.RealmObject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import io.realm.kotlin.types.RealmUUID
 
-class FrogRepository() {
+abstract class FrogRepository {
     lateinit var realm: Realm
 
-    private val appServiceInstance by lazy {
-        val configuration =
-            AppConfiguration.Builder("application-0-skyfw").log(LogLevel.ALL)
-                .build()
-        App.create(configuration)
-    }
+    abstract suspend fun setupRealmSync()
 
-    private suspend fun setupRealmSync() {
-        val user =
-            //appServiceInstance.login(Credentials.apiKey("mLiayJkH7oIlSvZcVkO5o36BK00ossQx6aigR4kSCBeKzDFGYLddng4RG8aQOKaU"))
-            appServiceInstance.login(Credentials.apiKey("6489f731f645d80dc3f85d6f"))
-        val config = SyncConfiguration.Builder(user, setOf(Frog::class))
-            .initialSubscriptions { realm ->
-                add(
-                    realm.query<Frog>(
-                        Frog::class,
-                        "name == $0",
-                        "name value"
-                    ),
-                    name = "subscription name",
-                    updateExisting = true
-                )
-            }
-            .build()
-        realm = Realm.open(config)
-    }
-
-    suspend fun addFrog(name1: String, age1: Int, species1: String, owner1: String): Frog? {
-
+    /** Function to convert all the latest data in a Frog realm object into
+     *    a implementation-independent FrogData object so that it
+     *    can be read and displayed in the view
+     */
+    suspend fun getFrogData(frog: Frog?) : FrogData? {
         if (!this::realm.isInitialized) {
             setupRealmSync()
         }
-        CoroutineScope(context = Dispatchers.Default).launch {
-            var frog2: Frog? = null
-            realm.write {
-                // create a frog object in the realm
-                frog2 = this.copyToRealm(Frog().apply {
-                    _id = "" + RealmStorageType.UUID.name
-                    name = name1
-                    age = age1
-                    species = species1
-                    owner = owner1
-                })
-            }
-            if (frog2 != null)
-                println("Added frog " + frog2?.name)
 
+        var frogData : FrogData? = null
+        realm.write {
+            if (frog != null) {
+                frogData = FrogData(
+                    id = frog!!._id,
+                    name= frog!!.name,
+                    age = frog!!.age,
+                    species = frog!!.species,
+                    owner = frog!!.owner,
+                    frog = frog)
+            }
         }
-        return null
+        return frogData
     }
 
-    suspend fun getFrog(): Frog? {
+    private fun closeRealmSync() {
+        realm.close()
+    }
+
+    /** Add a frog with the given data to the repository.
+     *    Initializes the id field to a random UUID if not specified.
+     *  Returns the new FrogData object or null if the operation failed. */
+    suspend fun addFrog(frogData : FrogData): FrogData? {
+        if (!this::realm.isInitialized) {
+            setupRealmSync()
+        }
+
+        var frog2: Frog? = null
+        realm.write {
+            // create a frog object in the realm
+            frog2 = this.copyToRealm(Frog().apply {
+                _id = frogData.id ?: RealmUUID.random().toString()
+                name = frogData.name
+                age = frogData.age
+                species = frogData.species
+                owner = frogData.owner
+            })
+        }
+        return getFrogData(frog2)
+    }
+
+    /** Returns the first frog found that matches the given name *
+     *   Returns a FrogData if a match is found, null otherwise.
+     */
+    suspend fun getFrog(frogName : String): FrogData? {
         if (!this::realm.isInitialized) {
             setupRealmSync()
         }
 
         // Search equality on the primary key field name
-        val frog: Frog? = realm.query<Frog>(Frog::class, "name = 'Kermit'").first().find()
-        return frog
+        val frog: Frog? = realm.query<Frog>(Frog::class, "name = \"$frogName\"").first().find()
+        return getFrogData(frog)
     }
 }

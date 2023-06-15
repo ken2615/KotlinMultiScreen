@@ -15,12 +15,12 @@ public fun MainApp() {
 //        SlideTransition(navigator)
 //    }
 
-//    Navigator(FrogScreen()) { navigator ->
-//        SlideTransition(navigator)
-//    }
-
-    Navigator(NeatScreen()) { navigator ->
+    Navigator(FrogScreen()) { navigator ->
         SlideTransition(navigator)
     }
+
+//    Navigator(NeatScreen()) { navigator ->
+//        SlideTransition(navigator)
+//    }
 
 }
