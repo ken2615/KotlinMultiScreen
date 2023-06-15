@@ -1,21 +1,20 @@
-package com.lduboscq.appkickstarter.main
+package com.lduboscq.appkickstarter.main.ExerciseScreens
+
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import cafe.adriel.voyager.core.screen.Screen
+import com.lduboscq.appkickstarter.main.BottomBar
+import com.lduboscq.appkickstarter.main.Drawer
+import com.lduboscq.appkickstarter.main.TopBar
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
-/**
- * This is the function that creates the Scaffold Composable. The scaffold
- * contains the TopBar, BottomBar, Body and the Drawer.
- * The drawer is inspired from: https://www.geeksforgeeks.org/scaffold-in-android-using-jetpack-compose/
- */
-
-internal class NeatScreen : Screen {
+internal class CardioScreen : Screen {
 
     @OptIn(ExperimentalResourceApi::class)
     @Composable
@@ -41,7 +40,7 @@ internal class NeatScreen : Screen {
             bottomBar = { BottomBar() },
 
             content = {
-                Body()
+                Text("Cardio API")
             },
 
             drawerContent = {
@@ -51,6 +50,3 @@ internal class NeatScreen : Screen {
     }
 
 }
-
-
-
