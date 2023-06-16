@@ -1,11 +1,11 @@
 package com.lduboscq.appkickstarter
 
-import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-class FrogScreenModel(private val repository: FrogRepositoryLocal)
+class FrogScreenModel(private val repository: FrogRepository)
     : StateScreenModel<FrogScreenModel.State>(State.Init) {
 
     sealed class State {
@@ -13,7 +13,7 @@ class FrogScreenModel(private val repository: FrogRepositoryLocal)
         object Loading : State()
         sealed class Result: State() {
             class SingleResult(val frogData: FrogData?) : Result()
-            class ListResult(val frogList: List<Frog>?) : Result()
+            class MultipleResult(val frogDatas: Flow<FrogData>?) : Result()
         }
     }
 
@@ -37,6 +37,20 @@ class FrogScreenModel(private val repository: FrogRepositoryLocal)
                 species = "Green",
                 owner = "Jim",
                 frog = null)))
+        }
+    }
+
+    fun updateFrog(frogName: String) {
+        coroutineScope.launch {
+            mutableState.value = State.Loading
+            mutableState.value = State.Result.SingleResult(repository.updateFrog(frogName))
+        }
+    }
+
+    fun deleteFrog(frogName: String) {
+        coroutineScope.launch {
+            mutableState.value = State.Loading
+            mutableState.value = State.Result.SingleResult(repository.deleteFrog(frogName))
         }
     }
 

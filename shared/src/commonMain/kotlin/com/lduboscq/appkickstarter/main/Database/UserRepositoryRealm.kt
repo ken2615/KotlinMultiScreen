@@ -3,7 +3,7 @@ package com.lduboscq.appkickstarter.main.Database
 import io.realm.kotlin.Realm
 import io.realm.kotlin.types.RealmUUID
 
-abstract class UserRepository {
+abstract class UserRepositoryRealm : UserRepository{
     lateinit var realm: Realm
 
     abstract suspend fun setupRealmSync()
@@ -34,7 +34,7 @@ abstract class UserRepository {
 
     /** Adds user
      * */
-    suspend fun addUser(userData: UserData) : UserData? {
+    override suspend fun addUser(userData: UserData) : UserData? {
         if(!this::realm.isInitialized) {
             setupRealmSync()
         }
@@ -53,7 +53,7 @@ abstract class UserRepository {
     }
 
     // returns the first user that matches the given name
-    suspend fun getUser(userName : String): UserData? {
+    override suspend fun getUser(userName : String): UserData? {
         if(!this::realm.isInitialized) {
             setupRealmSync()
         }

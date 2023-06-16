@@ -49,6 +49,16 @@ class FrogScreen : Screen {
                     Text("Get Frog")
                 }
             }
+            if (!frogName.isNullOrEmpty()) {
+                Button(onClick = { screenModel.updateFrog(frogName) }) {
+                    Text("Update Frog")
+                }
+            }
+            if (!frogName.isNullOrEmpty()) {
+                Button(onClick = { screenModel.deleteFrog(frogName) }) {
+                    Text("Delete Frog")
+                }
+            }
             if (state is FrogScreenModel.State.Result.SingleResult) { Text("The results of the action are:")
                 FrogCard(frogData=(state as FrogScreenModel.State.Result.SingleResult).frogData)
             }

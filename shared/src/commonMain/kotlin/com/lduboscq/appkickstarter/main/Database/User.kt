@@ -9,7 +9,7 @@ class User: RealmObject {
     var name: String = ""
     var password: String = ""
     var email: String = ""
-    var bmi: Int = 0
+    var bmi: Double = 0.0
 }
 
 data class UserData(
@@ -17,6 +17,6 @@ data class UserData(
     var name: String = "",
     var password: String = "",
     var email: String = "",
-    var bmi: Int = 0,
+    var bmi: Double = 0.0,
     var user: User?
 )
