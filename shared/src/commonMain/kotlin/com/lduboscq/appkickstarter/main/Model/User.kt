@@ -1,4 +1,4 @@
-package com.lduboscq.appkickstarter.main.Database
+package com.lduboscq.appkickstarter.main.Model
 
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.RealmUUID

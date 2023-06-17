@@ -31,7 +31,7 @@ internal class SettingScreen : Screen {
                         coroutineScope.launch {
                             scaffoldState.drawerState.open()        //open the Drawer when the navigation icon is clicked
                         }
-                    })
+                    }, "Settings")
             },
 
             bottomBar = { BottomBar() },

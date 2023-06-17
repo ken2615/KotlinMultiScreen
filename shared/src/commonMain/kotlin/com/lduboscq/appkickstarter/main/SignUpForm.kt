@@ -1,7 +1,6 @@
 package com.lduboscq.appkickstarter.main
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,10 +32,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import com.lduboscq.appkickstarter.ui.Image
 import com.lduboscq.appkickstarter.ui.theme.ThemeShapes
-import dev.icerock.moko.resources.compose.painterResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.math.roundToInt
+
 //import org.jetbrains.compose.resources.painterResource
 //import ui.theme.ThemeShapes
 
@@ -63,6 +65,8 @@ fun MyForm() {
     var bmiWeight = rememberSaveable { (mutableStateOf(0.0)) }
     var bmiHeight = rememberSaveable { (mutableStateOf(0.0)) }
     var bmi = rememberSaveable { (mutableStateOf(0.0)) }
+    val navigator = LocalNavigator.currentOrThrow
+
 
     LazyColumn(verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -179,8 +183,12 @@ fun MyForm() {
                         bmiHeight.value = metricHeight.value.toDouble() / 100.0
                         bmi.value = bmiWeight.value / (bmiHeight.value * bmiHeight.value)
                         showText.value = true
+                        bmi.value = (bmi.value * 100.0).roundToInt() / 100.0
+                        navigator.push(UserScreen(nameValue.value, passwordValue.value, emailValue.value, bmi.value))
+                        //navigator.push(ScreenRouter(AllScreens.User("String")))
                     }) {
                         Text(text = "Submit")
+
                     }
                 } else if (!metric && imperialFoot.value.isNotEmpty() && imperialInch.value.isNotEmpty() && imperialWeight.value.isNotEmpty()) {
                     Button(onClick = {
@@ -188,10 +196,12 @@ fun MyForm() {
                             ((imperialFoot.value.toDouble() * 12) + imperialInch.value.toDouble()) / 39.37
                         bmiWeight.value = imperialWeight.value.toDouble() / 2.205
                         bmi.value = bmiWeight.value / (bmiHeight.value * bmiHeight.value)
+                        bmi.value = (bmi.value * 100.0).roundToInt() / 100.0
                         showText.value = true
+                        navigator.push(UserScreen(nameValue.value, passwordValue.value, emailValue.value, bmi.value))
+
                     }) {
                         Text(text = "Submit")
-
                     }
                 }
                 if (showText.value) {

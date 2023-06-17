@@ -39,7 +39,7 @@ fun BottomBar() {
         }))
         Spacer(Modifier.weight(1f))
         Icon(Icons.Filled.Person, contentDescription = "User Page", modifier = Modifier.clickable (onClick = {
-            navigator.push(ScreenRouter(AllScreens.User))
+            //navigator.push(ScreenRouter(AllScreens.User))
         }))
         Spacer(Modifier.weight(1f))
         Icon(Icons.Filled.ShoppingCart, contentDescription = "Shopping Page", modifier = Modifier.clickable (onClick = {

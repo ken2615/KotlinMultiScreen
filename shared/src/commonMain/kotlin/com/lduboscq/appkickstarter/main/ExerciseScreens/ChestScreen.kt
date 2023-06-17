@@ -34,7 +34,7 @@ internal class ChestScreen : Screen {
                         coroutineScope.launch {
                             scaffoldState.drawerState.open()        //open the Drawer when the navigation icon is clicked
                         }
-                    })
+                    },"Chest Exercise")
             },
 
             bottomBar = { BottomBar() },

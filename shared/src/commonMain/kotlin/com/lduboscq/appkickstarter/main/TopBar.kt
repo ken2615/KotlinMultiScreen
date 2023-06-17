@@ -14,10 +14,10 @@ import androidx.compose.ui.graphics.Color
  * clickable Navigation Icon.
  **/
 @Composable
-fun TopBar(onMenuClicked: () -> Unit) {
+fun TopBar(onMenuClicked: () -> Unit, barName: String) {
     TopAppBar(
         title = {
-            Text(text = "Sign Up", color = Color.White)
+            Text(text = barName, color = Color.White)
         },
         navigationIcon = {
             Icon(

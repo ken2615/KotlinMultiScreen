@@ -34,7 +34,7 @@ internal class CardioScreen : Screen {
                         coroutineScope.launch {
                             scaffoldState.drawerState.open()        //open the Drawer when the navigation icon is clicked
                         }
-                    })
+                    }, "Cardio Exercise")
             },
 
             bottomBar = { BottomBar() },

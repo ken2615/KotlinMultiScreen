@@ -1,5 +1,7 @@
 package com.lduboscq.appkickstarter.main.Database
 
+import com.lduboscq.appkickstarter.main.Model.User
+import com.lduboscq.appkickstarter.main.Model.UserData
 import io.realm.kotlin.Realm
 import io.realm.kotlin.types.RealmUUID
 

@@ -2,7 +2,7 @@ package com.lduboscq.appkickstarter.main
 
 sealed class AllScreens {
     object Home : AllScreens()
-    object User : AllScreens()
+    //object User : AllScreens()
     object Shopping : AllScreens()
     object Settings : AllScreens()
     object Chest : AllScreens()

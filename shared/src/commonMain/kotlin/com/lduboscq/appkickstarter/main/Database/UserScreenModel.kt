@@ -2,6 +2,7 @@ package com.lduboscq.appkickstarter.main.Database
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
+import com.lduboscq.appkickstarter.main.Model.UserData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
