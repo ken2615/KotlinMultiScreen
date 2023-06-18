@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
 import androidx.compose.material.DrawerValue
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -26,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,8 +41,14 @@ import com.lduboscq.appkickstarter.main.Database.UserScreenModel
 import com.lduboscq.appkickstarter.ui.Image
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+//import ui.theme.ThemeShapes
 
 internal class UserScreen(val personName: String, val passWord: String, val emailValue: String, val bmiValue: Double) : Screen {
+
+    /**
+     * This is the user screen where we show the user's info and the recommended
+     * exercise
+     * */
 
     @OptIn(ExperimentalResourceApi::class)
     @Composable
@@ -52,6 +60,7 @@ internal class UserScreen(val personName: String, val passWord: String, val emai
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var bmi by remember { mutableStateOf(0.0) }
+        val newBMI = rememberSaveable{(mutableStateOf(""))}
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed)) //initial value of scaffold is that Drawer is close
 
         val coroutineScope = rememberCoroutineScope() // this is like AsyncTask where the task is executed at the background instead of the main thread
@@ -72,22 +81,8 @@ internal class UserScreen(val personName: String, val passWord: String, val emai
             bottomBar = { BottomBar() },
 
             content = {
-                //Text("This is the User Screen")
+
                 Column {
-                    Text("Hello $personName")
-//                    TextField(value = userName, onValueChange = {userName = it})
-//                    TextField(value = email, onValueChange = {email = it})
-//                    TextField(value = password, onValueChange = {password = it})
-//                    TextField(value = bmi.toString(), onValueChange = {newValue ->
-//                        bmi = newValue.toDoubleOrNull() ?: 0.0})
-//
-//
-//                    Button(onClick = {screenModel.addUser(userName,password,email, bmi)}){
-//                        Text("Add User")
-//                    }
-//                    Button(onClick = {screenModel.getUser(userName)}) {
-//                        Text("Get User")
-//                    }
 
                     Button(onClick = {screenModel.addUser(personName, passWord,emailValue, bmiValue)}){
                         Text("Add User")
@@ -100,6 +95,15 @@ internal class UserScreen(val personName: String, val passWord: String, val emai
                         Text("The results are: ")
                         UserCard(userData = (state as UserScreenModel.State.Result.SingleResult).userData)
                     }
+                    Card(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .wrapContentHeight(Alignment.CenterVertically)
+                    ){
+                        Text("Base on your BMI these are the recommended Daily workouts")
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Card(
                         Modifier
@@ -165,6 +169,19 @@ internal class UserScreen(val personName: String, val passWord: String, val emai
                         }
                     }
 
+                    Row {
+                        OutlinedTextField(
+                            label = { Text(text = "Enter new BMI")},
+                            value = newBMI.value,
+                            onValueChange = {newBMI.value = it},
+                            modifier = Modifier.weight(1f)
+                        )
+                        Button(onClick = {
+                            screenModel.updateBMI(personName, newBMI.value.toDouble())
+                        }) {
+                            Text("Update BMI")
+                        }
+                    }
 
                 }
 

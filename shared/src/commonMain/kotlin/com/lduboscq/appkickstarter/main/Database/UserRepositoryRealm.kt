@@ -3,12 +3,17 @@ package com.lduboscq.appkickstarter.main.Database
 import com.lduboscq.appkickstarter.main.Model.User
 import com.lduboscq.appkickstarter.main.Model.UserData
 import io.realm.kotlin.Realm
+import io.realm.kotlin.ext.toRealmList
 import io.realm.kotlin.types.RealmUUID
 
 abstract class UserRepositoryRealm : UserRepository{
     lateinit var realm: Realm
 
     abstract suspend fun setupRealmSync()
+
+    /**
+     * get user's data
+     * */
 
     suspend fun getUserData(user: User?) : UserData? {
         if(!this::realm.isInitialized) {
@@ -23,6 +28,7 @@ abstract class UserRepositoryRealm : UserRepository{
                     password = user!!.password,
                     email = user!!.email,
                     bmi = user!!.bmi,
+                    //exerciseList = user!!.exerciseList.toList(),
                     user = user
                 )
             }
@@ -49,6 +55,7 @@ abstract class UserRepositoryRealm : UserRepository{
                 password = userData.password
                 email = userData.email
                 bmi = userData.bmi
+                //exerciseList = userData.exerciseList.toRealmList()
             })
         }
         return getUserData(user2)
@@ -62,5 +69,30 @@ abstract class UserRepositoryRealm : UserRepository{
         val user : User? = realm.query<User>(User::class, "name = \"$userName\"").first().find()
         return getUserData(user)
 
+    }
+
+    /**
+     * Updates the user BMI
+     * */
+    override suspend fun updateBMI(userName: String, newBMI: Double): UserData? {
+        if(!this::realm.isInitialized){
+            setupRealmSync()
+        }
+        var userData: UserData? = null
+        try{
+            val user: User? =
+                realm.query<User>(User::class, "name = \"$userName\"").first().find()
+
+            realm.write {
+                if(user != null) {
+                    findLatest(user)!!.bmi = newBMI
+                }
+            }
+            userData = getUserData(user)
+
+        }catch (e: Exception){
+            println(e.message)
+        }
+        return userData
     }
 }

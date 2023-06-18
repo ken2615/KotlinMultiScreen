@@ -6,6 +6,7 @@ interface UserRepository {
 
     suspend fun getUser(userName : String) : UserData?
     suspend fun addUser(userData: UserData) : UserData?
+    suspend fun updateBMI(userName : String, newBMI: Double) : UserData?
 
 
 }

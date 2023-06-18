@@ -9,20 +9,16 @@ import com.lduboscq.appkickstarter.main.Model.UserData
 @Composable
 fun UserCard(userData: UserData?) {
 
-    Card(
-        //modifier = Modifier.size(width = 180.dp, height = 100.dp)
-            //.clip(MaterialTheme.shapes.small)
-    ) {
-        if(userData != null){
-            Column {
-                Text("Name: " + userData.name)
-                Text("Password: " + userData.password)
-                Text("Email: " + userData.email)
-                Text("BMI: " + userData.bmi)
-            }
+    if(userData != null){
+        Column {
+            Text("Name: " + userData.name)
+            //Text("Password: " + userData.password)
+            Text("Email: " + userData.email)
+            Text("BMI: " + userData.bmi)
+            //Text("Exercise List: " + userData.exerciseList.count())
         }
-        else {
-            Text("No User")
-        }
+    }
+    else {
+        Text("No User")
     }
 }

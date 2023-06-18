@@ -1,12 +1,34 @@
 package com.lduboscq.appkickstarter
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import io.realm.kotlin.Realm
+import io.realm.kotlin.notifications.DeletedObject
+import io.realm.kotlin.notifications.InitialObject
+import io.realm.kotlin.notifications.PendingObject
+import io.realm.kotlin.notifications.ResultsChange
+import io.realm.kotlin.notifications.UpdatedObject
+import io.realm.kotlin.notifications.UpdatedResults
 import io.realm.kotlin.types.RealmUUID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+
+//    val emojis = listOf("🐤","🐦","🐔","🦤","🕊","️","🦆","🦅","🪶","🦩","🐥","-","🐣","🦉","🦜","🦚","🐧","🐓","🦢","🦃","🦡","🦇","🐻","🦫","🦬","🐈","‍","⬛","🐗","🐪","🐈","🐱","🐿","️","🐄","🐮","🦌","🐕","🐶","🐘","🐑","🦊","🦒","🐐","🦍","🦮","🐹","🦔","🦛","🐎","🐴","🦘","🐨","🐆","🦁","🦙","🦣","🐒","🐵","🐁","🐭","🦧","🦦","🐂","🐼","🐾","🐖","🐷","🐽","🐻","‍","❄","️","🐩","🐇","🐰","🦝","🐏","🐀","🦏","🐕","‍","🦺","🦨","🦥","🐅","🐯","🐫","-","🦄","🐃","🐺","🦓","🐳","🐡","🐬","🐟","🐙","🦭","🦈","🐚","🐳","🐠","🐋","🌱","🌵","🌳","🌲","🍂","🍀","🌿","🍃","🍁","🌴","🪴","🌱","☘","️","🌾","🐊","🐊","🐉","🐲","🦎","🦕","🐍","🦖","-","🐢")
 
 abstract class FrogRepositoryRealm : FrogRepository {
     lateinit var realm: Realm
+    private var currentJob: Job? = null
 
     abstract suspend fun setupRealmSync()
+
+    private fun cancelCurrentJob() {
+        currentJob?.cancel()
+        currentJob = null
+    }
 
     /** Function to convert all the latest data in a Frog realm object into
      *    a implementation-independent FrogData object so that it
@@ -66,11 +88,111 @@ abstract class FrogRepositoryRealm : FrogRepository {
         if (!this::realm.isInitialized) {
             setupRealmSync()
         }
-
+        cancelCurrentJob()
         // Search equality on the primary key field name
         val frog: Frog? = realm.query<Frog>(Frog::class, "name = \"$frogName\"").first().find()
         return convertToFrogData(frog)
     }
+
+    override suspend fun getAllFrogsList(frogName: String?): List<FrogData>
+    {
+        if (!this::realm.isInitialized) {
+            setupRealmSync()
+        }
+        cancelCurrentJob()
+        val frogs: List<Frog> =
+            if (frogName == null)
+                realm.query<Frog>(Frog::class).find()
+            else
+                realm.query<Frog>(Frog::class, "name = \"$frogName\"").find()
+
+        val frogDataList = frogs.map { frog ->
+            FrogData(
+                id = frog._id,
+                name = frog.name,
+                age = frog.age,
+                species = frog.species,
+                owner = frog.owner,
+                frog = frog
+            )
+        }
+        return frogDataList
+    }
+
+    override suspend fun getAllFrogs(frogName: String?): MutableState<List<FrogData>> {
+        if (!this::realm.isInitialized) {
+            setupRealmSync()
+        }
+        val frogsState: MutableState<List<FrogData>> = mutableStateOf(emptyList())
+        cancelCurrentJob()
+        currentJob = CoroutineScope(Dispatchers.Default).launch {
+            // Listen to the Realm query result as a Flow
+            val frogFlow: Flow<ResultsChange<Frog>> =
+                if (frogName == null)
+                    realm.query<Frog>(Frog::class).find().asFlow()
+                else
+                    realm.query<Frog>(Frog::class, "name = \"$frogName\"").find().asFlow()
+
+            frogFlow.collect { resultsChange: ResultsChange<Frog> ->
+                // Convert each Frog object to FrogData
+                val frogs = resultsChange.list
+                val frogDataFlow = frogs.map { frog ->
+                    FrogData(
+                        id = frog._id,
+                        name = frog.name,
+                        age = frog.age,
+                        species = frog.species,
+                        owner = frog.owner,
+                        frog = frog
+                    )
+                }
+
+                // Update the mutable state with the new result
+                frogsState.value = frogDataFlow
+            }
+        }
+
+        return frogsState
+    }
+
+
+    override suspend fun getAllFrogsFlow(frogName: String?): Flow<List<FrogData>> {
+        if (!this::realm.isInitialized) {
+            setupRealmSync()
+        }
+        var frogsState: Flow<List<FrogData>> = flowOf(emptyList())
+        cancelCurrentJob()
+
+        currentJob = CoroutineScope(Dispatchers.Default).launch {
+            // Listen to the Realm query result as a Flow
+            val frogFlow: Flow<ResultsChange<Frog>> =
+                if (frogName == null)
+                    realm.query<Frog>(Frog::class).find().asFlow()
+                else
+                    realm.query<Frog>(Frog::class, "name = \"$frogName\"").find().asFlow()
+
+            frogFlow.collect { resultsChange: ResultsChange<Frog> ->
+                // Convert each Frog object to FrogData
+                val frogs = resultsChange.list
+                val frogDataFlow = frogs.map { frog ->
+                    FrogData(
+                        id = frog._id,
+                        name = frog.name,
+                        age = frog.age,
+                        species = frog.species,
+                        owner = frog.owner,
+                        frog = frog
+                    )
+                }
+
+                // Update the mutable state with the new result
+                frogsState = flowOf(frogDataFlow)
+            }
+        }
+
+        return frogsState
+    }
+
 
     /** Updates the frog that is the first match to the given name
      *   Placeholder operation:  Just adds to the name in fixed manner
@@ -81,24 +203,24 @@ abstract class FrogRepositoryRealm : FrogRepository {
         if (!this::realm.isInitialized) {
             setupRealmSync()
         }
-        var frog2: FrogData? = null
+        var frogData: FrogData? = null
         try {
             // Search equality on the primary key field name
             val frog: Frog? =
-                    realm.query<Frog>(Frog::class, "name = \"$frogName\"").first().find()
+                realm.query<Frog>(Frog::class, "name = \"$frogName\"").first().find()
 
-            // delete one object synchronously
+            // Update one object asynchronously
             realm.write {
                 if (frog != null) {
                     findLatest(frog)!!.age = findLatest(frog)!!.age + 1
                 }
             }
-            frog2 = convertToFrogData(frog)
+            frogData = convertToFrogData(frog)
         } catch (e: Exception) {
             println(e.message)
         }
 
-        return frog2
+        return frogData
     }
 
     /** Deletes the frog that is the first match to the given name
@@ -125,7 +247,8 @@ abstract class FrogRepositoryRealm : FrogRepository {
                         age = findLatest(frog)!!.age,
                         species = findLatest(frog)!!.species,
                         owner = findLatest(frog)!!.owner,
-                        frog = null)
+                        frog = null
+                    )
                     findLatest(frog)
                         ?.also { delete(it) }
                 }

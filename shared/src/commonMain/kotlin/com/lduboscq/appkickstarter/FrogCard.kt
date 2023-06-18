@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 fun FrogCard(frogData:FrogData?) {
     Card(
     modifier = Modifier.size(width = 180.dp, height = 100.dp)
-    .clip(MaterialTheme.shapes.small)
     ) {
         if (frogData != null) {
             Column {
